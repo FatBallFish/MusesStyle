@@ -1,0 +1,28 @@
+<script>
+$(".styleImage_%d").click(function () {
+    const modal_body = $("#modal_body_%d");
+    modal_body.empty();
+    const queryInfo = ($(this).attr("id"));
+    const resultId = queryInfo.split("_")[0];
+    const imageId = queryInfo.split("_")[1];
+    console.log(resultId);
+    console.log(imageId);
+    var data = {
+        'result_id': resultId,
+        'image_id': imageId
+    };
+    $.ajax({
+        type:"GET",
+        url:"http://120.79.162.134:7005/api/getImage",
+        data:data,
+        dataType:'json',
+        async: true,
+        success:function(data){
+            image = JSON.parse(data);
+            const img = $("<img width=100%% height=auto/>");
+            img.attr('src', image.styleImage);
+            modal_body.append(img);
+        },
+    });
+});
+</script>
