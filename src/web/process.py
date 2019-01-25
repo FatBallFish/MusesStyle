@@ -29,7 +29,7 @@ def process_manage(queue: Queue, index):
         filter.state = FilterState.objects.filter(id=3)[0]
         filter.save()
 
-        process = Process(target=train, args=(filter_info, False, ))
+        process = Process(target=train, args=(filter_info, True, ))
         process.start()
         process.join()
 
@@ -45,10 +45,11 @@ def init():
     process_pool = []
     for index in range(4):
         process = Process(target=process_manage, args=(filter_queue, index,))
+        # process = Process(target=process_manage, args=(filter_queue, 2,))
+
         print("进程%d建立成功, 使用第%d块显卡"%(index, index))
         process_pool.append(process)
         process.start()
-
     filter_list = Filter.objects.filter(finish_time__isnull=True)
     for filter in filter_list:
         filter_queue.put(filter)

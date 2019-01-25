@@ -13,7 +13,7 @@ $(".styleImage_%d").click(function () {
     };
     $.ajax({
         type:"GET",
-        url:"http://120.79.162.134:7005/api/getImage",
+        url:"/api/getImage",
         data:data,
         dataType:'json',
         async: true,

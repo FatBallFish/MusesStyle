@@ -11,13 +11,13 @@ def train_test():
         base64_data = base64_data.decode()
     print(base64_data)
     filter_info = json.dumps({
-        'upload_id': 55, # 唯一标识，不能重复
-        'filter_name': '马赛克', # 滤镜名称
+        'upload_id': 255, # 唯一标识，不能重复
+        'filter_name': 'test', # 滤镜名称
         'owner': 'czczcz',
         'style_template': base64_data,
-        'brush_size': 512, # 笔刷大小，无需修改
-        'brush_intensity': 800, # 风格强度，可以修改
-        'smooth': 0
+        'brush_size': 768, # 笔刷大小，无需修改
+        'brush_intensity': 1000, # 风格强度，可以修改
+        'smooth': 1000
     })
     response = requests.post('http://120.79.162.134:7005/api/createFilter', data=filter_info)
     print(response)

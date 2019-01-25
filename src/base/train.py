@@ -17,10 +17,10 @@ import shutil
 
 
 class Flags(object):
-    iter_num = 8000 # 8000
-    batch_size = 4
-    epoch = 2
-    content_weight = 1.0
+    iter_num = 17000 # 8000
+    batch_size = 2
+    epoch = 1
+    content_weight = 1
     content_layers = ["vgg_16/conv3/conv3_3"]
     style_layers = ["vgg_16/conv1/conv1_2", "vgg_16/conv2/conv2_2",
                     "vgg_16/conv3/conv3_3", "vgg_16/conv4/conv4_3"]
@@ -66,6 +66,7 @@ def build_network(filter_info: Filter):
     image_preprocessing_fn, image_unprocessing_fn = preprocessing_factory.get_preprocessing(is_training=False)
     processed_images = reader.image(Flags.batch_size, filter_info.brush_size, filter_info.brush_size,
                                     Flags.dataset, image_preprocessing_fn, epochs=Flags.epoch)
+    # print(processed_images)
     generated = model.net(processed_images, training=True)
     processed_generated = [image_preprocessing_fn(image, filter_info.brush_size, filter_info.brush_size)
                            for image in tf.unstack(generated, axis=0, num=Flags.batch_size)]
@@ -149,9 +150,6 @@ def prepare_train(sess: tf.Session, loss: Loss, training_path):
     for v in tf.global_variables():
         if not (v.name.startswith(Flags.loss_model)):
             variables_to_restore.append(v)
-    # with open("var.txt", 'w+') as file:
-    #     for var in variables_to_restore:
-    #         file.write(var.__str__()+"\n")
     variables_to_restore = [var for var in variables_to_restore if 'Adam' not in var.name]
     saver = tf.train.Saver(variables_to_restore, max_to_keep=1)
 
@@ -165,6 +163,9 @@ def prepare_train(sess: tf.Session, loss: Loss, training_path):
     last_file = tf.train.latest_checkpoint(training_path)
     if last_file:
         saver.restore(sess, last_file)
+    else:
+        print("正在载入base model")
+        saver.restore(sess, "res/baseModel/base.ckpt")
     return train_op, saver, global_step
 
 
@@ -181,11 +182,11 @@ def start_train(sess, saver, loss, train_op, global_step, summary, writer, train
             print('step: %d,  total Loss %f, secs/step: %f'%(step, loss_t, elapsed_time))
             if step % 50 == 0:
                 filter = Filter.objects.filter(id=filter_info.id)[0]
-                filter.schedule = step / 8000 * 100
+                filter.schedule = step / Flags.iter_num * 100
                 filter.save()
             # summary
             if debug:
-                if step % 10 == 0:
+                if step % 50 == 0:
                     summary_str = sess.run(summary)
                     writer.add_summary(summary_str, step)
                     writer.flush()
@@ -201,12 +202,13 @@ def start_train(sess, saver, loss, train_op, global_step, summary, writer, train
     coord.join(threads)
 
 
-def get_zip(pb_file, zip_file, ckpt_path):
+def get_zip(pb_file, zip_file, ckpt_path, debug=False):
     azip = zipfile.ZipFile(zip_file, 'w')
     azip.write(pb_file, compress_type=zipfile.ZIP_LZMA)
     azip.close()
     os.remove(pb_file)
-    shutil.rmtree(ckpt_path)
+    if not debug:
+        shutil.rmtree(ckpt_path)
 
 
 def train(filter_info: Filter, debug):
@@ -234,5 +236,4 @@ def train(filter_info: Filter, debug):
             export(ckpt_file=training_path+'/model.ckpt-'+str(Flags.iter_num), model_name=filter_info.upload_id, filter_info=filter_info)
             get_zip(pb_file='res/export/'+str(filter_info.upload_id)+'.pb',
                     zip_file='res/export/'+str(filter_info.upload_id)+'.zip',
-                    ckpt_path=training_path)
-
+                    ckpt_path=training_path, debug=debug)
