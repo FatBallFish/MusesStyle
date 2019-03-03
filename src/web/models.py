@@ -74,7 +74,7 @@ class FilterResult(models.Model):
             except:
                 result_list.append("图像处理出错")
 
-        html_code = html_modal % (self.id, "风格模板："+self.filter.filter_name, self.id)
+        html_code = html_modal % (self.id, "风格模板："+self.filter.filter_name+","+str(self.filter.upload_id), self.id)
         for idx, result in enumerate(result_list):
             html_code += html_item % (self.id, idx, self.id, result, self.id)
         html_code += html_js.replace("{", "{{").replace("}", "}}") % (self.id, self.id)

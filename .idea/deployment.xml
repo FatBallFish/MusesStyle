@@ -2,10 +2,17 @@
 <project version="4">
   <component name="PublishConfigData" autoUpload="Always" serverName="softitee">
     <serverData>
+      <paths name="root@120.79.162.134:7001">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="softitee">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/czczcz/styleWeb" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/czczcz/StyleTransfer/styleWeb" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
