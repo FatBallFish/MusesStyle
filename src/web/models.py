@@ -95,6 +95,7 @@ class Filter(models.Model):
     upload_id = models.IntegerField(null=True, unique=True, verbose_name="唯一标识")
     filter_name = models.CharField(max_length=30, verbose_name="滤镜名称")
     owner = models.CharField(max_length=30, verbose_name="创建者")
+    user_id = models.IntegerField(null=True, verbose_name="用户id")
     state = models.ForeignKey(to=FilterState, on_delete=models.CASCADE, verbose_name="状态")
     style_template = models.TextField(null=True, verbose_name="风格模板")
     brush_size = models.IntegerField(default=512, verbose_name="笔刷大小")
