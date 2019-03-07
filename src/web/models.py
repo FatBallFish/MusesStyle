@@ -92,9 +92,9 @@ class Filter(models.Model):
     if owner != null:
         the filter is a shared filter
     """
-    upload_id = models.IntegerField(null=True, unique=True, verbose_name="唯一标识")
+    upload_id = models.IntegerField(null=True, unique=True, auto_created=True, verbose_name="唯一标识")
     filter_name = models.CharField(max_length=30, verbose_name="滤镜名称")
-    owner = models.CharField(max_length=30, verbose_name="创建者")
+    owner = models.CharField(null=True, max_length=30, verbose_name="创建者")
     user_id = models.IntegerField(null=True, verbose_name="用户id")
     state = models.ForeignKey(to=FilterState, on_delete=models.CASCADE, verbose_name="状态")
     style_template = models.TextField(null=True, verbose_name="风格模板")
@@ -110,17 +110,20 @@ class Filter(models.Model):
     result = models.OneToOneField(to=FilterResult, null=True, on_delete=models.CASCADE, verbose_name="训练结果")
 
     def image_data(self):
-        image = Image.open(BytesIO(base64.urlsafe_b64decode(self.style_template)))
-        width, height = image.size[0], image.size[1]
-        scale = 80 / height
-        image = image.resize((int(width*scale), int(height*scale)), Image.ANTIALIAS)
-        output_buffer = BytesIO()
-        image.save(output_buffer, format='JPEG')
-        byte_data = output_buffer.getvalue()
-        return format_html(
-            '<img src="{}" height="80px"/>',
-            "data:image/png;base64,"+base64.b64encode(byte_data).decode(),
-        )
+        try:
+            image = Image.open(BytesIO(base64.urlsafe_b64decode(self.style_template)))
+            width, height = image.size[0], image.size[1]
+            scale = 80 / height
+            image = image.resize((int(width*scale), int(height*scale)), Image.ANTIALIAS)
+            output_buffer = BytesIO()
+            image.save(output_buffer, format='JPEG')
+            byte_data = output_buffer.getvalue()
+            return format_html(
+                '<img src="{}" height="80px"/>',
+                "data:image/png;base64,"+base64.b64encode(byte_data).decode(),
+            )
+        except:
+            pass
     image_data.short_description = u'风格模板'
 
     def __str__(self):

@@ -7,9 +7,9 @@ from datetime import datetime, date
 
 class FilterSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    upload_id = serializers.IntegerField()
+    user_id = serializers.IntegerField() 
     filter_name = serializers.CharField(max_length=30)               # 滤镜名称
-    owner = serializers.CharField(max_length=30)                     # 滤镜所有者
+    owner = serializers.CharField(max_length=30, default='user', required=False)    # 滤镜所有者
     style_template = serializers.CharField()                         # 风格模板
     brush_size = serializers.IntegerField(default=512)               # 笔刷尺寸
     brush_intensity = serializers.IntegerField(default=512)          # 笔刷强度

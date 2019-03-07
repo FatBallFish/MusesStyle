@@ -6,25 +6,24 @@ from PIL import Image
 
 
 def train_test():
-    with open("res/image/mosaic.jpg", "rb") as f:
+    with open("test.jpg", "rb") as f:
         base64_data = base64.urlsafe_b64encode(f.read())
         base64_data = base64_data.decode()
     print(base64_data)
     filter_info = json.dumps({
-        'upload_id': 255, # 唯一标识，不能重复
         'filter_name': 'test', # 滤镜名称
-        'owner': 'czczcz',
+        'user_id': 1,
         'style_template': base64_data,
         'brush_size': 768, # 笔刷大小，无需修改
         'brush_intensity': 1000, # 风格强度，可以修改
         'smooth': 1000
     })
-    response = requests.post('http://120.79.162.134:7005/api/createFilter', data=filter_info)
+    response = requests.post('http://art.deepicecream.com:7003/api/createFilter', data=filter_info)
     print(response)
 
 
 def image_test():
-    with open("res/image/mosaic.jpg", "rb") as f:
+    with open("test.jpg", "rb") as f:
         base64_data = base64.urlsafe_b64encode(f.read())
         base64_data = base64_data.decode()
     image = BytesIO(base64.urlsafe_b64decode(base64_data))

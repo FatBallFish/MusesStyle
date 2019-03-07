@@ -1,5 +1,5 @@
 import base64
-
+from django.core import serializers
 from src.web.models import Filter
 from src.web.models import FilterState
 from src.web.models import FilterResult
@@ -45,10 +45,20 @@ def get_image(request):
 
 @api_view(['GET'])
 def get_image_list(request):
-    result_id = int(request.GET.get("result_id"))
-    filter_result = FilterResult.objects.filter(id=result_id)[0]
+    result_id = int(request.GET.get("id"))
+    filter_result = Filter.objects.filter(id=id)[0].result
     image = filter_result.filter.style_template
     image = base64.urlsafe_b64decode(image)
     image = "data:image/png;base64,"+base64.b64encode(image).decode()
     data = json.dumps({'styleImage': image})
     return Response(data, status=status.HTTP_200_OK, content_type="application/json")
+
+
+@api_view(['GET'])
+def get_filter_list(request):
+    user_id = int(request.GET.get("user_id"))
+    filters = Filter.objects.filter(user_id=user_id)
+    serializer = FilterSerializer(filters)
+
+    return Response(serializer.data, status=status.HTTP_200_OK, content_type="application/json")
+
