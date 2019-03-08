@@ -6,8 +6,16 @@ from src.base.preprocessing import preprocessing_factory
 import src.base.utils as utils
 import os
 import time
+import base64
 slim = tf.contrib.slim
 
+def b64decode(origStr):
+    if(len(origStr)%3 == 1):
+        origStr += "=="
+    elif(len(origStr)%3 == 2):
+        origStr += "="
+    dStr = base64.b64decode(origStr)
+    return dStr
 
 def gram(layer):
     shape = tf.shape(layer)
@@ -29,7 +37,9 @@ def get_style_features(filterInfo, Flags, debug):
 
         # Get the style image data
         size = filterInfo.brush_size
-        img_bytes = tf.decode_base64(filterInfo.style_template)
+        base64_data = b64decode(filterInfo.style_template)
+        base64_data = base64.urlsafe_b64encode(base64_data)
+        img_bytes = tf.decode_base64(base64_data)
         image = tf.image.decode_image(img_bytes)
 
         # Add the batch dimension

@@ -106,39 +106,66 @@ def net(image, training):
     :return: generated image
     """
     # Less border effects when padding a little before passing through ..
-    # image = tf.pad(image, [[0, 0], [14, 14], [14, 14], [0, 0]], mode='REFLECT')
+    image = tf.pad(image, [[0, 0], [14, 14], [14, 14], [0, 0]], mode='REFLECT')
 
+    with tf.variable_scope('conv0'):
+        conv0 = relu(instance_norm(conv2d(image, 3, 3, 3, 1))) # [?, x, y, 3]
     with tf.variable_scope('conv1'):
-        conv1 = relu(instance_norm(conv2d(image, 3, 16, 3, 1)))
+        image1 = tf.slice(conv0, [0, 0, 0, 0], [-1, -1, -1, 1])
+        image2 = tf.slice(conv0, [0, 0, 0, 1], [-1, -1, -1, 1])
+        image3 = tf.slice(conv0, [0, 0, 0, 2], [-1, -1, -1, 1])
+        conv1_1 = relu(instance_norm(conv2d(image1, 1, 4, 3, 1)))
+        conv1_2 = relu(instance_norm(conv2d(image2, 1, 4, 3, 1)))
+        conv1_3 = relu(instance_norm(conv2d(image3, 1, 4, 3, 1)))
     with tf.variable_scope('conv2'):
-        conv2 = relu(instance_norm(conv2d(conv1, 16, 32, 3, 2)))
+        conv2_1 = relu(instance_norm(conv2d(conv1_1, 4, 8, 3, 2)))
+        conv2_2 = relu(instance_norm(conv2d(conv1_2, 4, 8, 3, 2)))
+        conv2_3 = relu(instance_norm(conv2d(conv1_3, 4, 8, 3, 2)))
     with tf.variable_scope('conv3'):
-        conv3 = relu(instance_norm(conv2d(conv2, 32, 48, 3, 2)))
+        conv3_1 = relu(instance_norm(conv2d(conv2_1, 8, 16, 3, 2)))
+        conv3_2 = relu(instance_norm(conv2d(conv2_2, 8, 16, 3, 2)))
+        conv3_3 = relu(instance_norm(conv2d(conv2_3, 8, 16, 3, 2)))
     with tf.variable_scope('res1'):
-        res1 = residual(conv3, 48, 3, 1)
+        res1_1 = residual(conv3_1, 16, 3, 1)
+        res1_2 = residual(conv3_2, 16, 3, 1)
+        res1_3 = residual(conv3_3, 16, 3, 1)
     with tf.variable_scope('res2'):
-        res2 = residual(res1, 48, 3, 1)
+        res2_1 = residual(res1_1, 16, 3, 1)
+        res2_2 = residual(res1_2, 16, 3, 1)
+        res2_3 = residual(res1_3, 16, 3, 1)
     with tf.variable_scope('res3'):
-        res3 = residual(res2, 48, 3, 1)
+        res3_1 = residual(res2_1, 16, 3, 1)
+        res3_2 = residual(res2_2, 16, 3, 1)
+        res3_3 = residual(res2_3, 16, 3, 1)
     with tf.variable_scope('res4'):
-        res4 = residual(res3, 48, 3, 1)
+        res4_1 = residual(res3_1, 16, 3, 1)
+        res4_2 = residual(res3_2, 16, 3, 1)
+        res4_3 = residual(res3_3, 16, 3, 1)
     with tf.variable_scope('res5'):
-        res5 = residual(res4, 48, 3, 1)
+        res5_1 = residual(res4_1, 16, 3, 1)
+        res5_2 = residual(res4_2, 16, 3, 1)
+        res5_3 = residual(res4_3, 16, 3, 1)
     with tf.variable_scope('deconv1'):
-        # deconv1 = relu(instance_norm(conv2d_transpose(res5, 48, 32, 3, 2)))
-        deconv1 = relu(instance_norm(resize_conv2d(res5, 48, 32, 3, 2, training)))
+        deconv1_1 = relu(instance_norm(resize_conv2d(res5_1, 16, 8, 3, 2, training)))
+        deconv1_2 = relu(instance_norm(resize_conv2d(res5_2, 16, 8, 3, 2, training)))
+        deconv1_3 = relu(instance_norm(resize_conv2d(res5_3, 16, 8, 3, 2, training)))
     with tf.variable_scope('deconv2'):
-        # deconv2 = relu(instance_norm(conv2d_transpose(deconv1, 32, 16, 3, 2)))
-        deconv2 = relu(instance_norm(resize_conv2d(deconv1, 32, 16, 3, 2, training)))
+        deconv2_1 = relu(instance_norm(resize_conv2d(deconv1_1, 8, 4, 3, 2, training)))
+        deconv2_2 = relu(instance_norm(resize_conv2d(deconv1_2, 8, 4, 3, 2, training)))
+        deconv2_3 = relu(instance_norm(resize_conv2d(deconv1_3, 8, 4, 3, 2, training)))
     with tf.variable_scope('deconv3'):
-        # deconv3 = tf.nn.tanh(instance_norm(conv2d(deconv2, 16, 3, 9, 1)))
-        deconv3 = tf.nn.tanh(instance_norm(conv2d(deconv2, 16, 3, 9, 1)))
-
-    y = (deconv3+1)*127.5
+        deconv3_1 = relu(instance_norm(conv2d(deconv2_1, 4, 1, 3, 1)))
+        deconv3_2 = relu(instance_norm(conv2d(deconv2_2, 4, 1, 3, 1)))
+        deconv3_3 = relu(instance_norm(conv2d(deconv2_3, 4, 1, 3, 1)))
+        deconv3 = tf.concat([deconv3_1, deconv3_2, deconv3_3], -1)
+        print(deconv3)
+    with tf.variable_scope('conv-1'):
+        conv = tf.nn.tanh(instance_norm(conv2d(deconv3, 3, 3, 3, 1)))
+    y = (conv+1)*127.5
 
     # Remove border effect reducing padding.
-    # height = tf.shape(y)[1]
-    # width = tf.shape(y)[2]
-    # y = tf.slice(y, [0, 14, 14, 0], tf.stack([-1, height-28, width-28, -1]))
+    height = tf.shape(y)[1]
+    width = tf.shape(y)[2]
+    y = tf.slice(y, [0, 14, 14, 0], tf.stack([-1, height-28, width-28, -1]))
 
     return y

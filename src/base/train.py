@@ -17,7 +17,7 @@ import shutil
 
 
 class Flags(object):
-    iter_num = 17000 # 8000
+    iter_num = 8000
     batch_size = 2
     epoch = 1
     content_weight = 1
@@ -163,9 +163,9 @@ def prepare_train(sess: tf.Session, loss: Loss, training_path):
     last_file = tf.train.latest_checkpoint(training_path)
     if last_file:
         saver.restore(sess, last_file)
-    else:
-        print("正在载入base model")
-        saver.restore(sess, "res/baseModel/base.ckpt")
+    # else:
+    #     print("正在载入base model")
+    #     saver.restore(sess, "res/baseModel/base.ckpt")
     return train_op, saver, global_step
 
 

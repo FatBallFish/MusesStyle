@@ -11,9 +11,16 @@ from rest_framework.decorators import api_view
 import json
 
 
+
+
+
 @api_view(['POST'])
 def create_filter(request):
     filter_data = json.loads(request.body) # 载入json数据
+    # template = filter_data['style_template']
+    # template = b64decode(template)
+    # template = base64.urlsafe_b64encode(template)
+    # filter_data['style_template'] = template
     serializer = FilterSerializer(data=filter_data) # 反序列化
     if serializer.is_valid():
         serializer.save() # 保存到数据库
