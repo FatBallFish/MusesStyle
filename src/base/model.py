@@ -160,7 +160,7 @@ def net(image, training):
         deconv3 = tf.concat([deconv3_1, deconv3_2, deconv3_3], -1)
         print(deconv3)
     with tf.variable_scope('conv-1'):
-        conv = tf.nn.tanh(instance_norm(conv2d(deconv3, 3, 3, 3, 1)))
+        conv = tf.nn.tanh(instance_norm(conv2d(deconv3, 3, 3, 7, 1)))
     y = (conv+1)*127.5
 
     # Remove border effect reducing padding.

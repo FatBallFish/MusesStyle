@@ -51,7 +51,7 @@ def init_network(filter_info: Filter, debug):
 
     style_features_t = losses.get_style_features(filter_info, Flags, debug)
     # Make sure the training path exists.
-    training_path = os.path.join(Flags.model_path, str(filter_info.upload_id))
+    training_path = os.path.join(Flags.model_path, str(filter_info.id))
     return style_features_t, training_path
 
 
