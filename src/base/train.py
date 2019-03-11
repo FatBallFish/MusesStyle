@@ -18,8 +18,8 @@ import shutil
 
 class Flags(object):
     iter_num = 8000
-    batch_size = 2
-    epoch = 1
+    batch_size = 4
+    epoch = 2
     content_weight = 1
     content_layers = ["vgg_16/conv3/conv3_3"]
     style_layers = ["vgg_16/conv1/conv1_2", "vgg_16/conv2/conv2_2",
@@ -233,7 +233,7 @@ def train(filter_info: Filter, debug):
             train_op, saver, global_step = prepare_train(sess, loss_tensor, training_path)
             start_train(sess, saver, loss_tensor, train_op, global_step, summary,
                         writer, training_path, debug, filter_info)
-            export(ckpt_file=training_path+'/model.ckpt-'+str(Flags.iter_num), model_name=filter_info.upload_id, filter_info=filter_info)
-            get_zip(pb_file='res/export/'+str(filter_info.upload_id)+'.pb',
-                    zip_file='res/export/'+str(filter_info.upload_id)+'.zip',
+            export(ckpt_file=training_path+'/model.ckpt-'+str(Flags.iter_num), model_name=filter_info.id, filter_info=filter_info)
+            get_zip(pb_file='res/export/'+str(filter_info.id)+'.pb',
+                    zip_file='res/export/'+str(filter_info.id)+'.zip',
                     ckpt_path=training_path, debug=debug)
