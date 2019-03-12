@@ -56,6 +56,7 @@ def export(ckpt_file, model_name, filter_info: Filter):
             filter_result = FilterResult()
             for idx, filename in enumerate(coco2014_list):
                 image = Image.open(filename)
+                image = image.convert('RGB')
                 image_input = center_crop(image, 512, 512)
                 start_time = time.time()
                 image_output = sess.run(tf.image.encode_jpeg(tf.cast(squeezed_image, tf.uint8)), feed_dict={

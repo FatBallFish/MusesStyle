@@ -43,7 +43,7 @@ def process_manage(queue: Queue, index):
 
 def init():
     process_pool = []
-    for index in range(1, 2):
+    for index in range(1, 3):
         process = Process(target=process_manage, args=(filter_queue, index,))
         print("进程%d建立成功, 使用第%d块显卡"%(index, index))
         process_pool.append(process)

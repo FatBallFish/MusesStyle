@@ -11,9 +11,11 @@ from src.web.models import Filter
 import time
 import src.base.losses as losses
 import src.base.utils as utils
+import requests
 import os
 import zipfile
 import shutil
+import json
 
 
 class Flags(object):
@@ -191,7 +193,7 @@ def start_train(sess, saver, loss, train_op, global_step, summary, writer, train
                     writer.add_summary(summary_str, step)
                     writer.flush()
             # checkpoint
-            if step % 500 == 0:
+            if step % 500 == 0: # TODO debug完改回500
                 if not (os.path.exists(training_path)):
                     os.makedirs(training_path)
                 saver.save(sess, os.path.join(training_path, 'model.ckpt'), global_step=step)
@@ -210,6 +212,28 @@ def get_zip(pb_file, zip_file, ckpt_path, debug=False):
     if not debug:
         shutil.rmtree(ckpt_path)
 
+
+def copy_file(source_path, target_path, filename):
+    open(target_path+filename, "wb").write(open(source_path+filename, "rb").read())
+
+
+def send_request(filter_info: Filter):
+    r = requests.post("http://art.deepicecream.com:7004/api/addFilter/"+str(filter_info.id))
+    print(r)
+    filter = Filter.objects.filter(id=filter_info.id)[0]
+    data = {
+        'ownerId': filter_info.user_id,
+        'uploadId': filter_info.id,
+        'filterName': filter_info.filter_name,
+        'brushSize': filter_info.brush_size,
+        'brushIntensity': filter_info.brush_intensity,
+        'smooth': filter_info.smooth,
+        'base64Image': filter.result.image1
+    }
+    data_json = json.dumps(data)
+    headers = {'content-type': 'application/json'}
+    r = requests.post("http://muses.deepicecream.com:7010/api/filter/", data=data_json, headers=headers)
+    print(r.text)
 
 def train(filter_info: Filter, debug):
     """
@@ -234,6 +258,10 @@ def train(filter_info: Filter, debug):
             start_train(sess, saver, loss_tensor, train_op, global_step, summary,
                         writer, training_path, debug, filter_info)
             export(ckpt_file=training_path+'/model.ckpt-'+str(Flags.iter_num), model_name=filter_info.id, filter_info=filter_info)
-            get_zip(pb_file='res/export/'+str(filter_info.id)+'.pb',
-                    zip_file='res/export/'+str(filter_info.id)+'.zip',
-                    ckpt_path=training_path, debug=debug)
+            # get_zip(pb_file='res/export/'+str(filter_info.id)+'.pb',
+            #         zip_file='res/export/'+str(filter_info.id)+'.zip',
+            #         ckpt_path=training_path, debug=debug)
+            copy_file(source_path='res/export/', filename=str(filter_info.id)+'.pb',
+                      target_path='../MusesPhoto/models/')
+            send_request(filter_info)
+

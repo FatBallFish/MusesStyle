@@ -48,8 +48,12 @@ def get_coco2014_dataset():
         image_list.append(all_coco2014[random.randint(0, len(all_coco2014)-1)])
     return image_list
 
+def post_test():
+    r = requests.post("http://art.deepicecream.com:7004/api/addFilter/"+str(424))
+    print(r)
 
 if __name__ == '__main__':
-    train_test()
+    # train_test()
     # image_test()
     # get_coco2014_dataset()
+    post_test()

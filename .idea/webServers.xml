@@ -2,10 +2,10 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="56f371ac-6ffb-4bd2-87ce-996e623f04e7" name="softitee" url="http://120.79.162.134">
-        <fileTransfer host="120.79.162.134" port="7001" accessType="SFTP">
+      <webServer id="56f371ac-6ffb-4bd2-87ce-996e623f04e7" name="softitee" url="http://art.deepicecream.com">
+        <fileTransfer host="art.deepicecream.com" port="7001" accessType="SFTP">
           <advancedOptions>
-            <advancedOptions dataProtectionLevel="Private" shareSSLContext="true" />
+            <advancedOptions dataProtectionLevel="Private" />
           </advancedOptions>
           <option name="port" value="7001" />
         </fileTransfer>
