@@ -7,7 +7,7 @@ from datetime import datetime, date
 
 class FilterSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    user_id = serializers.IntegerField() 
+    user_id = serializers.IntegerField()
     filter_name = serializers.CharField(max_length=30)               # 滤镜名称
     owner = serializers.CharField(max_length=30, default='user', required=False)    # 滤镜所有者
     style_template = serializers.CharField()                         # 风格模板

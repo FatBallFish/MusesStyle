@@ -9,18 +9,13 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import json
-
-
-
+from PIL import Image
+from io import BytesIO
 
 
 @api_view(['POST'])
 def create_filter(request):
     filter_data = json.loads(request.body) # 载入json数据
-    # template = filter_data['style_template']
-    # template = b64decode(template)
-    # template = base64.urlsafe_b64encode(template)
-    # filter_data['style_template'] = template
     serializer = FilterSerializer(data=filter_data) # 反序列化
     if serializer.is_valid():
         serializer.save() # 保存到数据库
@@ -65,7 +60,28 @@ def get_image_list(request):
 def get_filter_list(request):
     user_id = int(request.GET.get("user_id"))
     filters = Filter.objects.filter(user_id=user_id)
-    serializer = FilterSerializer(filters)
-
-    return Response(serializer.data, status=status.HTTP_200_OK, content_type="application/json")
+    print(filters)
+    data = {
+        "code": "OK",
+        "message": "加载正在训练滤镜列表成功",
+        "data": []
+    }
+    for filter in filters:
+        image = Image.open(BytesIO(base64.urlsafe_b64decode(filter.style_template)))
+        image = image.convert('RGB')
+        width, height = image.size[0], image.size[1]
+        scale = 512/height
+        image = image.resize((int(width*scale), int(height*scale)), Image.ANTIALIAS)
+        output_buffer = BytesIO()
+        image.save(output_buffer, format='JPEG')
+        byte_data = output_buffer.getvalue()
+        data["data"].append({
+            "id": filter.id,
+            "style_template": base64.b64encode(byte_data).decode(),
+            "name": filter.filter_name,
+            "state": filter.state.state,
+            "schedule": float(filter.schedule)
+        })
+    json_data = json.dumps(data)
+    return Response(json_data, status=status.HTTP_200_OK, content_type="application/json")
 

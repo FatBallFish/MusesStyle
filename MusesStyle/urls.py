@@ -16,11 +16,13 @@ Including another URLconf
 from django.urls import path, include
 from src.web.apis import create_filter
 from src.web.apis import get_image
+from src.web.apis import get_filter_list
 import xadmin
 
 urlpatterns = [
     path('xadmin/', xadmin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/createFilter', create_filter),
-    path('api/getImage', get_image)
+    path('api/getImage', get_image),
+    path('api/filter/list', get_filter_list)
 ]

@@ -110,20 +110,21 @@ class Filter(models.Model):
     result = models.OneToOneField(to=FilterResult, null=True, on_delete=models.CASCADE, verbose_name="训练结果")
 
     def image_data(self):
-        try:
-            image = Image.open(BytesIO(base64.urlsafe_b64decode(self.style_template)))
-            width, height = image.size[0], image.size[1]
-            scale = 80 / height
-            image = image.resize((int(width*scale), int(height*scale)), Image.ANTIALIAS)
-            output_buffer = BytesIO()
-            image.save(output_buffer, format='JPEG')
-            byte_data = output_buffer.getvalue()
-            return format_html(
-                '<img src="{}" height="80px"/>',
-                "data:image/png;base64,"+base64.b64encode(byte_data).decode(),
-            )
-        except:
-            pass
+        style_template = self.style_template
+        if style_template.startswith("data:image/png;base64,"):
+            style_template = style_template[22:]
+        image = Image.open(BytesIO(base64.urlsafe_b64decode(style_template)))
+        image = image.convert('RGB')
+        width, height = image.size[0], image.size[1]
+        scale = 80 / height
+        image = image.resize((int(width*scale), int(height*scale)), Image.ANTIALIAS)
+        output_buffer = BytesIO()
+        image.save(output_buffer, format='JPEG')
+        byte_data = output_buffer.getvalue()
+        return format_html(
+            '<img src="{}" height="80px"/>',
+            "data:image/png;base64,"+base64.b64encode(byte_data).decode(),
+        )
     image_data.short_description = u'风格模板'
 
     def __str__(self):
