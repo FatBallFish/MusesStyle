@@ -8,14 +8,28 @@ from src.web.process import filter_queue
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from django.db.models import Q
 import json
 from PIL import Image
 from io import BytesIO
 
 
+def add_thumbnail(filter_data):
+    image = Image.open(BytesIO(base64.urlsafe_b64decode(filter_data["style_template"])))
+    image = image.convert('RGB')
+    width, height = image.size[0], image.size[1]
+    scale = 512/height
+    image = image.resize((int(width*scale), int(height*scale)), Image.ANTIALIAS)
+    output_buffer = BytesIO()
+    image.save(output_buffer, format='JPEG')
+    byte_data = output_buffer.getvalue()
+    filter_data["thumbnail"] = base64.b64encode(byte_data).decode()
+    return filter_data
+
 @api_view(['POST'])
 def create_filter(request):
     filter_data = json.loads(request.body) # 载入json数据
+    filter_data = add_thumbnail(filter_data)
     serializer = FilterSerializer(data=filter_data) # 反序列化
     if serializer.is_valid():
         serializer.save() # 保存到数据库
@@ -59,7 +73,7 @@ def get_image_list(request):
 @api_view(['GET'])
 def get_filter_list(request):
     user_id = int(request.GET.get("user_id"))
-    filters = Filter.objects.filter(user_id=user_id)
+    filters = Filter.objects.filter(Q(user_id=user_id) and Q(schedule__lt=100))
     print(filters)
     data = {
         "code": "OK",
@@ -67,19 +81,19 @@ def get_filter_list(request):
         "data": []
     }
     for filter in filters:
-        image = Image.open(BytesIO(base64.urlsafe_b64decode(filter.style_template)))
-        image = image.convert('RGB')
-        width, height = image.size[0], image.size[1]
-        scale = 512/height
-        image = image.resize((int(width*scale), int(height*scale)), Image.ANTIALIAS)
-        output_buffer = BytesIO()
-        image.save(output_buffer, format='JPEG')
-        byte_data = output_buffer.getvalue()
+        # image = Image.open(BytesIO(base64.urlsafe_b64decode(filter.style_template)))
+        # image = image.convert('RGB')
+        # width, height = image.size[0], image.size[1]
+        # scale = 512/height
+        # image = image.resize((int(width*scale), int(height*scale)), Image.ANTIALIAS)
+        # output_buffer = BytesIO()
+        # image.save(output_buffer, format='JPEG')
+        # byte_data = output_buffer.getvalue()
         data["data"].append({
             "id": filter.id,
-            "style_template": base64.b64encode(byte_data).decode(),
+            "style_template": filter.thumbnail,
             "name": filter.filter_name,
-            "state": filter.state.state,
+            "state": filter.state.id,
             "schedule": float(filter.schedule)
         })
     json_data = json.dumps(data)

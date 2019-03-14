@@ -18,7 +18,7 @@ class FilterSerializer(serializers.Serializer):
     upload_day = serializers.DateTimeField(required=False)           # 上传时间
     start_time = serializers.DateTimeField(required=False)           # 开始训练时间
     finish_time = serializers.DateTimeField(required=False)          # 完成训练时间
-
+    thumbnail = serializers.CharField()  # 风格模板
     def create(self, validated_data):
         return Filter.objects.create(
             state=FilterState.objects.filter(id=1)[0],

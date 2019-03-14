@@ -108,9 +108,10 @@ class Filter(models.Model):
     schedule = models.DecimalField(null=True, blank=True, max_digits=6, decimal_places=2,
                                    default=0, verbose_name="训练进度")
     result = models.OneToOneField(to=FilterResult, null=True, on_delete=models.CASCADE, verbose_name="训练结果")
+    thumbnail = models.TextField(null=True, verbose_name="风格模板缩略图")
 
     def image_data(self):
-        style_template = self.style_template
+        style_template = self.thumbnail
         if style_template.startswith("data:image/png;base64,"):
             style_template = style_template[22:]
         image = Image.open(BytesIO(base64.urlsafe_b64decode(style_template)))
