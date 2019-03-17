@@ -19,7 +19,7 @@ import json
 
 
 class Flags(object):
-    iter_num = 8000
+    iter_num = 12000
     batch_size = 4
     epoch = 2
     content_weight = 1
@@ -165,9 +165,9 @@ def prepare_train(sess: tf.Session, loss: Loss, training_path):
     last_file = tf.train.latest_checkpoint(training_path)
     if last_file:
         saver.restore(sess, last_file)
-    # else:
-    #     print("正在载入base model")
-    #     saver.restore(sess, "res/baseModel/base.ckpt")
+    else:
+        print("正在载入base model")
+        saver.restore(sess, "res/baseModel/base.ckpt")
     return train_op, saver, global_step
 
 
@@ -193,7 +193,7 @@ def start_train(sess, saver, loss, train_op, global_step, summary, writer, train
                     writer.add_summary(summary_str, step)
                     writer.flush()
             # checkpoint
-            if step % 500 == 0: # TODO debug完改回500
+            if step % 500 == 0:
                 if not (os.path.exists(training_path)):
                     os.makedirs(training_path)
                 saver.save(sess, os.path.join(training_path, 'model.ckpt'), global_step=step)
@@ -242,6 +242,8 @@ def train(filter_info: Filter, debug):
     :param debug: 是否debug
     :return:
     """
+    Flags.batch_size = Flags.batch_size if filter_info.brush_size != 768 else Flags.batch_size // 2
+    print(Flags.batch_size)
     style_features_t, training_path = init_network(filter_info, debug)
     with tf.Graph().as_default():
         tf_config = tf.ConfigProto()
