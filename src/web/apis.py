@@ -36,6 +36,7 @@ def create_filter(request):
         filter_info: Filter = serializer.instance
         filter_queue.put(filter_info)
         filter_info.state = FilterState.objects.filter(id=2)[0]
+        filter_info.save()
         print("添加滤镜至队列")
         # 加入进程队列
         return Response(status=status.HTTP_200_OK)
@@ -73,7 +74,7 @@ def get_image_list(request):
 @api_view(['GET'])
 def get_filter_list(request):
     user_id = int(request.GET.get("user_id"))
-    filters = Filter.objects.filter(Q(user_id=user_id) and Q(schedule__lt=100))
+    filters = Filter.objects.filter(user_id=user_id).filter(schedule__lt=100)
     print(filters)
     data = {
         "code": "OK",
@@ -81,14 +82,6 @@ def get_filter_list(request):
         "data": []
     }
     for filter in filters:
-        # image = Image.open(BytesIO(base64.urlsafe_b64decode(filter.style_template)))
-        # image = image.convert('RGB')
-        # width, height = image.size[0], image.size[1]
-        # scale = 512/height
-        # image = image.resize((int(width*scale), int(height*scale)), Image.ANTIALIAS)
-        # output_buffer = BytesIO()
-        # image.save(output_buffer, format='JPEG')
-        # byte_data = output_buffer.getvalue()
         data["data"].append({
             "id": filter.id,
             "style_template": filter.thumbnail,
@@ -96,6 +89,6 @@ def get_filter_list(request):
             "state": filter.state.id,
             "schedule": float(filter.schedule)
         })
-    json_data = json.dumps(data)
-    return Response(json_data, status=status.HTTP_200_OK, content_type="application/json")
+    # json_data = json.dumps(data, ensure_ascii=False)
+    return Response(data, status=status.HTTP_200_OK, content_type="application/json")
 
