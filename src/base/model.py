@@ -86,8 +86,6 @@ def relu(x):
     :return: output tensor of relu layer
     """
     relu_ = tf.nn.relu(x)
-    # convert nan to zero
-    # nan_to_zero = tf.where(tf.equal(relu_, relu_), relu_, tf.zeros_like(relu_))
     return relu_
 
 

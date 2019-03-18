@@ -43,12 +43,12 @@ def process_manage(queue: Queue, index):
 
 def init():
     process_pool = []
-    for index in range(1, 3):
+    for index in range(1, 4):
         process = Process(target=process_manage, args=(filter_queue, index,))
         print("进程%d建立成功, 使用第%d块显卡"%(index, index))
         process_pool.append(process)
         process.start()
-    filter_list = Filter.objects.filter(finish_time__isnull=True)
+    filter_list = Filter.objects.filter(schedule__lt=100)
     for filter in filter_list:
         filter_queue.put(filter)
         print(filter)

@@ -9,7 +9,7 @@ class FilterAdmin(object):
     list_display = ['id', 'filter_name', 'user_id', 'state', 'brush_size', 'brush_intensity', 'smooth',
                     'upload_time', 'start_time', 'finish_time', 'image_data', 'schedule']
     search_fields = ['filter_name', 'owner', 'state']
-    list_editable = ['filter_name', 'owner', "user_id"]
+    list_editable = ['filter_name', 'owner', "user_id", "state"]
     list_filter = ['filter_name', 'owner', 'state', 'brush_size', 'brush_intensity',
                    'smooth', 'upload_time', 'start_time', 'finish_time']
     data_charts = {

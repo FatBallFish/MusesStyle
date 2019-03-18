@@ -19,9 +19,8 @@ import json
 
 
 class Flags(object):
-    iter_num = 12000
+    iter_num = 8000
     batch_size = 4
-    epoch = 2
     content_weight = 1
     content_layers = ["vgg_16/conv3/conv3_3"]
     style_layers = ["vgg_16/conv1/conv1_2", "vgg_16/conv2/conv2_2",
@@ -65,9 +64,12 @@ def build_network(filter_info: Filter):
     """
     network_fn = nets_factory.get_network_fn(num_classes=1, is_training=False)
     global image_preprocessing_fn, image_unprocessing_fn
+    dataset = Flags.dataset if "山水" not in filter_info.filter_name else "res/shanshui"
+    dataset = dataset if "人像" not in filter_info.filter_name else "res/human"
+    print(dataset)
     image_preprocessing_fn, image_unprocessing_fn = preprocessing_factory.get_preprocessing(is_training=False)
     processed_images = reader.image(Flags.batch_size, filter_info.brush_size, filter_info.brush_size,
-                                    Flags.dataset, image_preprocessing_fn, epochs=Flags.epoch)
+                                    dataset, image_preprocessing_fn)
     # print(processed_images)
     generated = model.net(processed_images, training=True)
     processed_generated = [image_preprocessing_fn(image, filter_info.brush_size, filter_info.brush_size)
@@ -165,9 +167,9 @@ def prepare_train(sess: tf.Session, loss: Loss, training_path):
     last_file = tf.train.latest_checkpoint(training_path)
     if last_file:
         saver.restore(sess, last_file)
-    else:
-        print("正在载入base model")
-        saver.restore(sess, "res/baseModel/base.ckpt")
+    # else:
+    #     print("正在载入base model")
+    #     saver.restore(sess, "res/baseModel/base.ckpt")
     return train_op, saver, global_step
 
 
@@ -184,7 +186,9 @@ def start_train(sess, saver, loss, train_op, global_step, summary, writer, train
             print('step: %d,  total Loss %f, secs/step: %f'%(step, loss_t, elapsed_time))
             if step % 50 == 0:
                 filter = Filter.objects.filter(id=filter_info.id)[0]
+                # filter.schedule = (step-8000) / (Flags.iter_num-8000) * 100
                 filter.schedule = step / Flags.iter_num * 100
+
                 filter.save()
             # summary
             if debug:
