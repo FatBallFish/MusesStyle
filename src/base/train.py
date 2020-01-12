@@ -1,6 +1,3 @@
-# coding: utf-8
-from __future__ import print_function
-from __future__ import division
 import tensorflow as tf
 import src.base.reader as reader
 import src.base.model as model
@@ -19,7 +16,7 @@ import json
 
 
 class Flags(object):
-    iter_num = 8000
+    iter_num = 20000
     batch_size = 4
     content_weight = 1
     content_layers = ["vgg_16/conv3/conv3_3"]
@@ -64,14 +61,14 @@ def build_network(filter_info: Filter):
     """
     network_fn = nets_factory.get_network_fn(num_classes=1, is_training=False)
     global image_preprocessing_fn, image_unprocessing_fn
-    dataset = Flags.dataset if "山水" not in filter_info.filter_name else "res/shanshui"
-    dataset = dataset if "人像" not in filter_info.filter_name else "res/human"
-    print(dataset)
+
     image_preprocessing_fn, image_unprocessing_fn = preprocessing_factory.get_preprocessing(is_training=False)
     processed_images = reader.image(Flags.batch_size, filter_info.brush_size, filter_info.brush_size,
-                                    dataset, image_preprocessing_fn)
-    # print(processed_images)
+                                    Flags.dataset, image_preprocessing_fn)
+    # origin = tf.stack([image_unprocessing_fn(image) for image in tf.unstack(processed_images, axis=0, num=Flags.batch_size)])
+    # generated = model.net(origin/255.0, training=True)
     generated = model.net(processed_images, training=True)
+
     processed_generated = [image_preprocessing_fn(image, filter_info.brush_size, filter_info.brush_size)
                            for image in tf.unstack(generated, axis=0, num=Flags.batch_size)]
     processed_generated = tf.stack(processed_generated)
@@ -155,7 +152,7 @@ def prepare_train(sess: tf.Session, loss: Loss, training_path):
         if not (v.name.startswith(Flags.loss_model)):
             variables_to_restore.append(v)
     variables_to_restore = [var for var in variables_to_restore if 'Adam' not in var.name]
-    saver = tf.train.Saver(variables_to_restore, max_to_keep=1)
+    saver = tf.train.Saver(variables_to_restore, max_to_keep=5)
 
     sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
 
@@ -167,9 +164,7 @@ def prepare_train(sess: tf.Session, loss: Loss, training_path):
     last_file = tf.train.latest_checkpoint(training_path)
     if last_file:
         saver.restore(sess, last_file)
-    # else:
-    #     print("正在载入base model")
-    #     saver.restore(sess, "res/baseModel/base.ckpt")
+
     return train_op, saver, global_step
 
 
@@ -223,7 +218,6 @@ def copy_file(source_path, target_path, filename):
 
 def send_request(filter_info: Filter):
     r = requests.post("http://art.deepicecream.com:7004/api/addFilter/"+str(filter_info.id))
-    print(r)
     filter = Filter.objects.filter(id=filter_info.id)[0]
     data = {
         'ownerId': filter_info.user_id,
@@ -237,7 +231,7 @@ def send_request(filter_info: Filter):
     data_json = json.dumps(data)
     headers = {'content-type': 'application/json'}
     r = requests.post("http://muses.deepicecream.com:7010/api/filter/", data=data_json, headers=headers)
-    print(r.text)
+
 
 def train(filter_info: Filter, debug):
     """
@@ -247,7 +241,7 @@ def train(filter_info: Filter, debug):
     :return:
     """
     Flags.batch_size = Flags.batch_size if filter_info.brush_size != 768 else Flags.batch_size // 2
-    print(Flags.batch_size)
+
     style_features_t, training_path = init_network(filter_info, debug)
     with tf.Graph().as_default():
         tf_config = tf.ConfigProto()

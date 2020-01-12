@@ -43,7 +43,7 @@ def get_style_features(filterInfo, Flags, debug):
         image = tf.image.decode_image(img_bytes)
 
         # Add the batch dimension
-        images = tf.expand_dims(image_preprocess_fn(image, size, size), 0)
+        images = tf.expand_dims(image_preprocess_fn(image, size, size), 0) # 减去均值
 
         _, endpoints_dict = network_fn(images, spatial_squeeze=False)
         features = []
@@ -106,5 +106,3 @@ def total_variation_loss(layer):
     loss = tf.nn.l2_loss(x)/tf.to_float(tf.size(x))+tf.nn.l2_loss(y)/tf.to_float(tf.size(y))
     return loss
 
-
-# def histogram_loss():

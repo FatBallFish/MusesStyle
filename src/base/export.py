@@ -1,5 +1,3 @@
-# coding: utf-8
-from __future__ import print_function
 import tensorflow as tf
 import time
 from PIL import Image
@@ -40,8 +38,8 @@ def export(ckpt_file, model_name, filter_info: Filter):
     with g.as_default():
         with tf.Session() as sess:
 
-            processed_image = tf.placeholder(tf.float32, [1, None, None, 3], name='input')
-            generated_image = model.net(processed_image, training=False)
+            image_placeholder = tf.placeholder(tf.float32, [1, None, None, 3], name='input')
+            generated_image = model.net(image_placeholder, training=False)
             casted_image = tf.cast(generated_image, tf.int32)
             # Remove batch dimension
             squeezed_image = tf.squeeze(casted_image, [0])
@@ -60,7 +58,7 @@ def export(ckpt_file, model_name, filter_info: Filter):
                 image_input = center_crop(image, 512, 512)
                 start_time = time.time()
                 image_output = sess.run(tf.image.encode_jpeg(tf.cast(squeezed_image, tf.uint8)), feed_dict={
-                    processed_image: [np.array(image_input)]
+                    image_placeholder: [np.array(image_input)]
                 })
                 setattr(filter_result, "image"+str(idx+1), base64.urlsafe_b64encode(image_output).decode())
                 end_time = time.time()
