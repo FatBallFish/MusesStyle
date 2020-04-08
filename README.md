@@ -26,3 +26,9 @@ pip install git+git://github.com/sshwsfc/xadmin.git@django2
 ```sh
 python manage.py runserver 0.0.0.0:7003
 ```
+
+## 3 登录
+```
+账号：czczcz
+密码：abc88784989
+```
